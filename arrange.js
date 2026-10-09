@@ -81,7 +81,7 @@ export function arrangeTab(dev) {
     capture.disabled = !dev.perform;
     capture.querySelector("b").textContent = picking ? "Cancel" : s >= 0 ? `Capture into ${SEC[s]}` : "Replace a section";
     capture.querySelector("span").textContent = picking ? "Tap the section the loop replaces"
-      : s >= 0 ? `Saves the loop that is playing as section ${SEC[s]}` : "All four sections hold a loop";
+      : s >= 0 ? "Saves the loop that is playing, to come back to" : "All four sections hold a loop";
     capture.style.setProperty("--c", s >= 0 ? TC[s] : "var(--fg2)");
     paintChain();
     if (!st) return;

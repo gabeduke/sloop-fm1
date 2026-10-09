@@ -4,7 +4,7 @@
 import { h, sheet } from "./widgets.js";
 import { NEXT } from "./next.js";
 
-export const GUIDE_URL = "https://github.com/isod89/sloop-fm1/blob/main/LIVE.md";
+export const GUIDE_URL = "https://github.com/gabeduke/sloop-fm1/blob/sloop-live/LIVE.md";
 
 const HOW = {
   live: [
@@ -43,7 +43,7 @@ export function helpSheet(tabsShown) {
       h("summary", {}, n.title, h("small", {}, tab.toLowerCase())), h("p", {}, n.what), h("p", { class: "dim" }, n.decide))));
   sheet("Help", [
     ...how,
-    h("a", { class: "chip big guide", href: GUIDE_URL, target: "_blank", rel: "noopener" }, "the full guide"),
+    h("a", { class: "chip big guide", href: GUIDE_URL, target: "_blank", rel: "noopener" }, "Open the user guide"),
     h("h3", { class: "nexth" }, "What could come next"),
     h("p", { class: "dim" }, "Ideas that need a decision (or a firmware change) first. Tap one for what it would do and what it needs."),
     ...next,

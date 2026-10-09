@@ -1,4 +1,5 @@
 # SLOOP live
 
-The phone surface for SLOOP on the M-VAVE FM-1, built from web/live of the `sloop-live` branch.
-Needs SLOOP with editor protocol v11 (PERFORM). GPL-3.0.
+The phone and tablet surface for SLOOP on the M-VAVE FM-1, published from `web/live` of the
+[sloop-live](https://github.com/gabeduke/sloop-fm1/tree/sloop-live) branch (proposed upstream to isod89/sloop-fm1).
+User guide: [LIVE.md](https://github.com/gabeduke/sloop-fm1/blob/sloop-live/LIVE.md). GPL-3.0.

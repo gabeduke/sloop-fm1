@@ -108,6 +108,9 @@ dev.addEventListener("connection", (e) => {
     build();
     keepAwake();
     if (mode === "usb") remember.set();
+    try {                                              /* once: where the help is */
+      if (!localStorage.getItem("sloop.helped")) { localStorage.setItem("sloop.helped", "1"); toast("New here? Tap ? in the top bar to see how each tab is played.", 4500); }
+    } catch (_) {}
   } else if (s === "lost") {
     tabs && tabs.live.release();
     if (tabs) { $("banner").hidden = false; $("banner").textContent = "The FM-1 is unplugged. Plug it back in to carry on: this page reconnects by itself."; }
@@ -187,7 +190,7 @@ function setupSheet() {
       mode === "demo" || !AutoMidi.supported ? h("button", { class: "chip big", onclick: () => { location.search = ""; } }, "leave the demo")
         : h("button", { class: "chip big", onclick: () => { close(); dev.disconnect("idle"); startDemo(); } }, "try the demo"),
       h("button", { class: "chip big", onclick: () => { close(); updateNow(); } }, "update and reload")),
-    h("a", { class: "chip big guide", href: GUIDE_URL, target: "_blank", rel: "noopener" }, "the full guide"),
+    h("a", { class: "chip big guide", href: GUIDE_URL, target: "_blank", rel: "noopener" }, "Open the user guide"),
     h("p", { class: "dim" }, "SLOOP live is GPL-3.0, part of SLOOP (based on Felucca by Leo Kuroshita, Hügelton Instruments)."),
   ]);
 }
