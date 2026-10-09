@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // SLOOP live works offline once opened: the page and its files from the cache, refreshed in the background.
-const CACHE = "sloop-live-2";
+const CACHE = "sloop-live-3";
 const FILES = ["./", "index.html", "app.js", "proto.js", "transports.js", "device.js", "widgets.js", "parts.js", "live.js",
   "arrange.js", "sound.js", "mix.js", "next.js", "mock.js", "mockdata.js", "terminus.ttf",
   "manifest.webmanifest", "icon.svg", "icon-192.png", "icon-512.png"];

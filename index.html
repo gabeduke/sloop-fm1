@@ -278,6 +278,42 @@
     .trk { height: 48px; }
     .tab.live .sec small { display: none; }
   }
+  /* ---- tablets: split. Live stays on screen; the other pane (Sound, Arrange, Mix) beside it in landscape, below
+     it in portrait. Each pane scrolls on its own; the pads never move. ---- */
+  #app.split #nav-live { display: none; }
+  #app.split .tabbar { grid-template-columns: repeat(3, 1fr); }
+  #app.split #tabs { display: grid; overflow: hidden; gap: 0; }
+  #app.split #tabs > .tab { overflow-y: auto; overscroll-behavior: contain; min-height: 0; height: 100%; }
+  #app.split #tabs > .tab:not(.live) { background: var(--s1); padding-top: 10px; }
+  #app.split #tabs > .tab:not(.live) .card, #app.split #tabs > .tab:not(.live) .knob,
+  #app.split #tabs > .tab:not(.live) .ttab:not(.on), #app.split #tabs > .tab:not(.live) .pname { background: var(--bg); }
+  #app.split .tab.live { display: grid; gap: 10px var(--gap); padding-bottom: 10px;
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); grid-template-rows: auto auto minmax(0, 1fr);
+    grid-template-areas: "sec sec" "trk trk" "pads xy"; }
+  #app.split .tab.live > .sections { grid-area: sec; }
+  #app.split .tab.live > .tracks { grid-area: trk; }
+  #app.split .tab.live > .padwrap { grid-area: pads; min-height: 0; }
+  #app.split .tab.live > .xywrap { grid-area: xy; min-height: 0; }
+  #app.split .tab.live .pad { min-height: 0; }
+  #app.split .tab.sound { display: flex; flex-direction: column; }
+  #app.split .tab.sound > * { align-self: stretch; }
+  #app.split .tab.live .xywrap .label { flex-wrap: wrap; }
+  #app.split .tab.live .xywrap .label .chip.wide { flex: 1 1 100%; }
+  #app.split .tab.live .xywrap .label .chip:not(.wide) { flex: 1 1 0; text-align: center; }
+  #app.split .tab.sound > .knobs { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  #app.split .knobs .rowt { display: block; }
+  #app.split .chan { grid-template-rows: minmax(160px, 24vh) auto auto; }
+  @media (orientation: landscape) {
+    #app.split #tabs { grid-template-columns: minmax(0, 1.4fr) minmax(380px, 1fr); }
+    #app.split #tabs > .tab:not(.live) { border-left: 2px solid var(--s2); }
+  }
+  @media (orientation: portrait) {
+    #app.split #tabs { grid-template-rows: minmax(0, 1.25fr) minmax(0, 1fr); }
+    #app.split #tabs > .tab:not(.live) { border-top: 2px solid var(--s2); }
+    #app.split .tab.live { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr);
+      grid-template-areas: "sec trk" "pads xy"; }
+    #app.split .tab.live .xywrap { grid-template-rows: auto 1fr; }
+  }
   @media (prefers-reduced-motion: reduce) {
     .sec.next { animation: none; box-shadow: inset 0 0 0 5px var(--c); }
     .plug i:nth-child(2) { animation: none; }

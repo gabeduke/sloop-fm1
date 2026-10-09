@@ -51,20 +51,28 @@ function build() {
   host.hidden = false;
   paintAll();
 }
+/* a tablet (or any big screen) splits: Live stays on screen, the tab bar picks the other pane (Sound first) */
+const SPLIT = matchMedia("(min-width: 1000px) and (min-height: 600px), (min-width: 700px) and (min-height: 900px)");
+let split = SPLIT.matches;
+let side = (() => { try { const v = localStorage.getItem("sloop.side"); return TABS.includes(v) && v !== "live" ? v : "sound"; } catch (_) { return "sound"; } })();
+SPLIT.addEventListener("change", (e) => { split = e.matches; show(split ? side : current); });
+const shown = () => (split ? ["live", side] : [current]);
+
 function show(k) {
-  current = k;
-  try { localStorage.setItem("sloop.tab", k); } catch (_) {}
+  if (split) { if (k !== "live") side = k; } else current = k;
+  try { localStorage.setItem("sloop.tab", current); localStorage.setItem("sloop.side", side); } catch (_) {}
+  const vis = shown();
+  $("app").classList.toggle("split", split);
   for (const t of TABS) {
-    if (tabs) tabs[t].el.hidden = t !== k;
-    const b = $("nav-" + t);
-    b.setAttribute("aria-selected", t === k);
+    if (tabs) tabs[t].el.hidden = !vis.includes(t);
+    $("nav-" + t).setAttribute("aria-selected", split ? t === side : t === current);
   }
   if (tabs) paintAll();
 }
 function paintAll() {
   if (!tabs) return;
   paintTop();
-  tabs[current].paint();
+  for (const t of shown()) tabs[t].paint();
 }
 
 /* ------------------------------------------------------------ the top bar --- */
@@ -108,7 +116,7 @@ dev.addEventListener("connection", (e) => {
 });
 dev.addEventListener("state", () => paintAll());
 dev.addEventListener("health", () => paintStatus());
-dev.addEventListener("tracks", () => { if (tabs) { tabs[current].paint(); if (current === "sound") tabs.sound.paint(); } });
+dev.addEventListener("tracks", () => { if (tabs) for (const t of shown()) tabs[t].paint(); });
 dev.addEventListener("sound", (e) => {
   if (!tabs) return;
   if (e.detail && e.detail.id !== undefined) { tabs.sound.paintValues(e.detail); tabs.live.paintValues(); return; }
