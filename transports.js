@@ -7,23 +7,25 @@
 const PORT = /felucca|sloop/i;                       /* the FM-1 keeps the port name "Felucca" */
 
 export class WebMidiTransport {
+  constructor(access) { this.access = access; }     /* (a MIDIAccess the page keeps: AutoMidi in device.js) */
   static get supported() { return !!navigator.requestMIDIAccess; }
   get label() { return "USB"; }
   async open(onData, onLost) {
-    let access;
-    try { access = await navigator.requestMIDIAccess({ sysex: true }); }
-    catch (e) { throw Object.assign(new Error("MIDI access was refused. Allow MIDI devices for this site, then connect again."), { code: "denied" }); }
+    let access = this.access;
+    if (!access) {
+      try { access = await navigator.requestMIDIAccess({ sysex: true }); }
+      catch (e) { throw Object.assign(new Error("MIDI access was refused. Allow MIDI devices for this site, then connect again."), { code: "denied" }); }
+    }
     const pick = (m) => [...m.values()].find((p) => PORT.test(p.name || "") && p.state !== "disconnected");
     const input = pick(access.inputs), output = pick(access.outputs);
     if (!input || !output) {
-      throw Object.assign(new Error("No FM-1 found. Plug it in with a data cable (an OTG adapter on a phone), then connect again."), { code: "nodevice" });
+      throw Object.assign(new Error("No FM-1 found. Plug it in with a data cable (an OTG adapter on a phone)."), { code: "nodevice" });
     }
     if (input.open) await input.open().catch(() => {});
     input.onmidimessage = (e) => onData(e.data);
-    access.onstatechange = (e) => {
-      if ((e.port === input || e.port === output) && e.port.state === "disconnected") onLost();
-    };
-    this.close = () => { input.onmidimessage = null; access.onstatechange = null; };
+    const gone = (e) => { if ((e.port === input || e.port === output) && e.port.state === "disconnected") onLost(); };
+    access.addEventListener("statechange", gone);
+    this.close = () => { input.onmidimessage = null; access.removeEventListener("statechange", gone); };
     this.send = (d) => output.send(d);
   }
 }

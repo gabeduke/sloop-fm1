@@ -3,9 +3,13 @@
 // replies SLOOP LIVE reads. Transport-agnostic: a Link sends raw MIDI bytes through any send(bytes).
 
 export const CMD = {
-  INFO: 1, GET: 2, SET: 3, DESC: 5, WATCH: 22, CHANGED: 23, RELOAD: 24, PING: 25, STEP_CHANGED: 26,
-  TRACK: 27, TRACK_MIX: 28, TRACK_PARAM: 31, TRACK_CHANGED: 32, PERFORM: 43,
+  INFO: 1, GET: 2, SET: 3, DESC: 5, PRESET: 8, NAMES: 10, UP_LIST: 16, UP_STORE: 19, UP_LOAD: 20,
+  WATCH: 22, CHANGED: 23, RELOAD: 24, PING: 25, STEP_CHANGED: 26,
+  TRACK: 27, TRACK_MIX: 28, TRACK_DUMP: 29, TRACK_PARAM: 31, TRACK_CHANGED: 32, PERFORM: 43,
 };
+/* DESC formats (firmware core.h) */
+export const F = { INT: 0, PCT: 1, BIPCT: 2, TIME: 3, LFOHZ: 4, CUTOFF: 5, DB: 6, SEMI: 7, ENUM: 8, BPM: 9, NOTE: 10,
+  ONOFF: 11, OCT: 12, STEPS: 13, SWING: 14, FILT: 15 };
 export const PF = {
   STATE: 0, FX: 1, SECTION: 2, CHAIN: 3, MUTE: 4, SOLO: 5, TRANSPORT: 6, FILL: 7, TAP: 8,
   SONGMODE: 9, SONGREC: 10, STORE: 11,
@@ -37,7 +41,9 @@ export class Reader {
 function matches(cmd, args, a) {
   switch (cmd) {
     case CMD.GET: case CMD.SET: case CMD.DESC: return a[0] === args[0] && a[1] === args[1];
-    case CMD.TRACK_MIX: case CMD.TRACK_PARAM: return a[0] === args[0];
+    case CMD.TRACK_MIX: case CMD.TRACK_PARAM: case CMD.TRACK_DUMP: case CMD.NAMES: case CMD.UP_STORE:
+    case CMD.UP_LOAD: return a[0] === args[0];
+    case CMD.UP_LIST: return a[0] === args[0];
     case CMD.PERFORM: return a[0] === (args.length ? args[0] : PF.STATE);
     default: return true;
   }
@@ -137,10 +143,58 @@ export function parsePerform(a) {
     armed = r.b(), ready = r.b(), section = r.b(), next = r.b(), songrec = r.b(), chainN = r.b(), chainI = r.b();
   const chain = [];
   for (let i = 0; i < chainN; i++) chain.push(r.b());
+  const sel = r.more ? r.b() : -1;                   /* (the selected track and the section lengths: SLOOP live 2) */
+  const bars = r.more ? [r.b(), r.b(), r.b(), r.b()] : null;
   return {
-    op, rc, bpm, beat, fx: fx === NONE ? -1 : fx, mute, solo, armed, ready,
+    op, rc, bpm, beat, fx: fx === NONE ? -1 : fx, mute, solo, armed, ready, sel, bars,
     section: section === NONE ? -1 : section, next: next === NONE ? -1 : next, songrec, chain, chainI,
     playing: !!(flags & 1), songMode: !!(flags & 2), songPlays: !!(flags & 4), fillHeld: !!(flags & 8),
     fillNext: !!(flags & 16), fxRemote: !!(flags & 32), recArmed: !!(flags & 64),
   };
+}
+
+/* TRACK_DUMP: track, engine byte, preset, P_COUNT values */
+export function parseDump(a, pCount) {
+  const r = new Reader(a);
+  const track = r.b(), eng = r.b(), preset = r.b(), p = [];
+  for (let i = 0; i < pCount && r.more; i++) p.push(r.v());
+  return { track, eng, preset, p };
+}
+
+/* NAMES: engine, count, the preset names, then the two edit-page titles */
+export function parseNames(a) {
+  const r = new Reader(a);
+  const eng = r.b(), n = r.b(), names = [];
+  for (let i = 0; i < n; i++) names.push(r.s());
+  const pages = [r.s(), r.s()];
+  return { eng, names, pages };
+}
+
+/* UP_LIST: start, count, total, then per slot: used, engine, name */
+export function parseUpList(a) {
+  const r = new Reader(a);
+  const start = r.b(), count = r.b(), total = r.b(), slots = [];
+  for (let i = 0; i < count; i++) slots.push({ slot: start + i, used: !!r.b(), eng: r.b(), name: r.s() });
+  return { start, total, slots };
+}
+
+const NOTE = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+const pct = (v, m) => Math.round(v * 100 / (m || 1));
+/* a value as the device would say it (close enough: exact formatting is the device's) */
+export function fmtValue(d, v) {
+  if (!d) return String(v);
+  switch (d.fmt) {
+    case F.PCT: return pct(v, d.max) + "%";
+    case F.BIPCT: return (v > 0 ? "+" : "") + (v < 0 ? -pct(-v, -d.min) : pct(v, d.max)) + "%";
+    case F.ENUM: return (d.names[v - d.min] ?? String(v)).toLowerCase();
+    case F.SEMI: return (v > 0 ? "+" : "") + v + " st";
+    case F.NOTE: return NOTE[((v % 12) + 12) % 12];
+    case F.ONOFF: return v ? "on" : "off";
+    case F.OCT: return (v > 0 ? "+" : "") + v + " oct";
+    case F.STEPS: return v + " steps";
+    case F.SWING: { const s = 50 + v / 4; return (Number.isInteger(s) ? s : s.toFixed(1)) + "%"; }
+    case F.FILT: return v === 0 ? "off" : v < 0 ? "low " + pct(-v, 64) + "%" : "high " + pct(v, 63) + "%";
+    case F.BPM: return v + " bpm";
+    default: return v + (d.unit ? " " + d.unit : "");
+  }
 }
