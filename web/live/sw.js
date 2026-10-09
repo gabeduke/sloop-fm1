@@ -2,7 +2,7 @@
 // SLOOP live offline, always the latest online. Every file is asked of the network first (revalidated, past the HTTP
 // cache) and kept; offline, or when the network takes longer than 3 s, the kept copy answers. A new version of this
 // file (CACHE changes with every release) takes over at once; the page then offers a reload (app.js).
-const CACHE = "sloop-live-5";
+const CACHE = "sloop-live-6";
 const FILES = ["./", "index.html", "app.js", "proto.js", "transports.js", "device.js", "widgets.js", "parts.js", "live.js",
   "arrange.js", "sound.js", "mix.js", "next.js", "help.js", "mock.js", "mockdata.js", "terminus.ttf",
   "manifest.webmanifest", "icon.svg", "icon-192.png", "icon-512.png"];

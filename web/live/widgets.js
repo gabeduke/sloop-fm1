@@ -5,6 +5,7 @@ export const $ = (id) => document.getElementById(id);
 export function h(tag, attrs = {}, ...kids) {
   const e = document.createElement(tag);
   for (const [k, v] of Object.entries(attrs)) {
+    if (k.startsWith("aria-") && typeof v === "boolean") { e.setAttribute(k, String(v)); continue; }   /* (aria-pressed="true", not "") */
     if (v === undefined || v === null || v === false) continue;
     if (k === "class") e.className = v;
     else if (k === "style" && typeof v === "object") Object.assign(e.style, v);
@@ -111,7 +112,7 @@ export function fader(el, { min, max, get, set, label, center = false, vertical 
    default; an enum also opens its list on a tap (onPick) */
 export function knob({ desc, label, get, set, fmt, color = "var(--fg2)", onPick }) {
   const d = desc, span = d.max - d.min || 1, bip = d.min < 0 && d.max > 0;
-  const ring = h("div", { class: "ring" });
+  const ring = h("div", { class: "ring" }, h("i", { class: "arc" }));
   const val = h("span", { class: "kv" });
   const el = h("div", { class: "knob", role: "slider", tabindex: 0, "aria-label": label, "aria-valuemin": d.min,
     "aria-valuemax": d.max, "--c": color }, ring, h("span", { class: "kl" }, label), val);
@@ -200,7 +201,15 @@ export function xyPad(el, { get, onDown = () => {}, onMove, onUp = () => {} }) {
 
 /* a bottom sheet: sheet(title, body) -> close(); the back, Escape or the close button close it */
 export function sheet(title, body, { onClose = () => {} } = {}) {
-  const close = () => { back.remove(); document.removeEventListener("keydown", esc); onClose(); };
+  let gone = false;                                  /* (it slides away; reduced motion: at once) */
+  const close = () => {
+    if (gone) return;
+    gone = true;
+    document.removeEventListener("keydown", esc);
+    const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (still) back.remove(); else { back.classList.add("closing"); setTimeout(() => back.remove(), 200); }
+    onClose();
+  };
   const esc = (e) => { if (e.key === "Escape") close(); };
   const box = h("div", { class: "sheet", role: "dialog", "aria-modal": "true", "aria-label": title },
     h("header", {}, h("h2", {}, title), h("button", { class: "x", onclick: () => close(), "aria-label": "Close" }, "close")),

@@ -24,7 +24,7 @@ cd web/live && python3 -m http.server 8000
 
 | File | What it does |
 | --- | --- |
-| `index.html` | the page and all of its CSS (the FM-1's look: black, the four track colours, the Terminus pixel font at 16 / 32 px) |
+| `index.html` | the page and all of its CSS (the FM-1 at night: black, the four track colours, the Terminus pixel font at 16 / 32 px; backlit keys that glow when lit, recessed glass for the screens; light comes on at once and fades out, and `prefers-reduced-motion` turns the movement off) |
 | `app.js` | the shell: first run, standby, plug / unplug, the top bar, the tabs, the tablet split, the help and setup sheets |
 | `device.js` | `Device`: one connection and everything known about the FM-1 (INFO, descriptors, the live state, the tracks, the selected track's sound), as events. `AutoMidi`: keeps the MIDI access and connects when an FM-1 appears |
 | `proto.js` | the frames (`F0 7D 46 4C cmd … F7`), `Link` (one request in flight, a queue with priorities and coalescing), the reply parsers, `fmtValue` |
