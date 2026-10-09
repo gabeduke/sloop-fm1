@@ -12,7 +12,7 @@ import { soundTab } from "./sound.js";
 import { mixTab } from "./mix.js";
 import { helpSheet, GUIDE_URL } from "./help.js";
 
-const APP_VERSION = "1.0";                            /* SLOOP live's own version (the setup sheet shows it) */
+const APP_VERSION = "1.1";                            /* SLOOP live's own version (the setup sheet shows it) */
 const QS = new URLSearchParams(location.search);
 const dev = new Device();
 let tabs = null, auto = null, wakeLock = null, mode = "usb";
@@ -51,6 +51,8 @@ function build() {
   $("app").classList.remove("standing");
   host.hidden = false;
   paintAll();
+  $("app").classList.add("boot");                     /* (the hello: a wave of light across the pads) */
+  setTimeout(() => $("app").classList.remove("boot"), 1200);
 }
 /* a tablet (or any big screen) splits: Live stays on screen, the tab bar picks the other pane (Sound first) */
 const SPLIT = matchMedia("(min-width: 1000px) and (min-height: 600px), (min-width: 700px) and (min-height: 900px)");
