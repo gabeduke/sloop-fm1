@@ -50,7 +50,7 @@ export function liveTab(dev) {
   let latch = store.get("latch", false);
   const fxSend = () => dev.op(PF.FX, [held.length ? held[held.length - 1] : NONE], "fx");
   const pads = FX_NAMES.map((n, i) => {
-    const b = h("button", { class: "pad" + (i % 4 === 0 ? " mark" : ""), "--c": TC[i >> 2], "aria-label": "Punch-in " + n },
+    const b = h("button", { class: "pad" + (i % 4 === 0 ? " mark" : ""), "--c": TC[i >> 2], "--i": (i >> 2) + (i & 3), "aria-label": "Punch-in " + n },
       h("b", {}, String(i + 1)), n);
     holdable(b, () => {
       if (latch) {
