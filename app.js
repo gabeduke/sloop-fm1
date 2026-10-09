@@ -4,14 +4,15 @@
 import { PF } from "./proto.js";
 import { Device, AutoMidi } from "./device.js";
 import { WebMidiTransport, WebSocketTransport } from "./transports.js";
-import { $, h, sheet, toast, nextCard } from "./widgets.js";
+import { $, h, sheet, toast } from "./widgets.js";
 import { SEC, position } from "./parts.js";
 import { liveTab } from "./live.js";
 import { arrangeTab } from "./arrange.js";
 import { soundTab } from "./sound.js";
 import { mixTab } from "./mix.js";
-import { NEXT } from "./next.js";
+import { helpSheet, GUIDE_URL } from "./help.js";
 
+const APP_VERSION = "1.0";                            /* SLOOP live's own version (the setup sheet shows it) */
 const QS = new URLSearchParams(location.search);
 const dev = new Device();
 let tabs = null, auto = null, wakeLock = null, mode = "usb";
@@ -180,18 +181,41 @@ function setupSheet() {
   const close = sheet("SLOOP live", [
     h("p", {}, dev.connected ? `${i.version}, protocol v${i.proto}, over ${mode === "demo" ? "the demo device" : mode === "ws" ? "the relay" : "USB"}.`
       : "Not connected."),
+    h("p", { class: "dim" }, `SLOOP live ${APP_VERSION}. Online it always opens the latest version; offline, the one it kept.`),
     h("p", { class: "dim" }, "Install it: Chrome menu > Add to Home screen. It opens full screen and keeps the phone awake while connected."),
     h("div", { class: "row two" },
       mode === "demo" || !AutoMidi.supported ? h("button", { class: "chip big", onclick: () => { location.search = ""; } }, "leave the demo")
         : h("button", { class: "chip big", onclick: () => { close(); dev.disconnect("idle"); startDemo(); } }, "try the demo"),
-      h("button", { class: "chip big", onclick: () => { close(); location.reload(); } }, "reconnect")),
-    h("h2", { class: "nexth" }, "Next steps"),
-    NEXT.setup.map(nextCard),
+      h("button", { class: "chip big", onclick: () => { close(); updateNow(); } }, "update and reload")),
+    h("a", { class: "chip big guide", href: GUIDE_URL, target: "_blank", rel: "noopener" }, "the full guide"),
     h("p", { class: "dim" }, "SLOOP live is GPL-3.0, part of SLOOP (based on Felucca by Leo Kuroshita, Hügelton Instruments)."),
   ]);
 }
 
+/* ------------------------------------------------------------ updates --- */
+/* The service worker answers from the network first, so a reload is always the latest. An installed app has no
+   reload, though: when a new version of the worker takes over, a bar offers one (never on its own: a reload in the
+   middle of a jam would drop the FM-1 for a second). The worker is checked whenever the app comes back to the front. */
+let swReg = null;
+function registerWorker() {
+  if (!("serviceWorker" in navigator) || location.protocol === "file:") return;
+  let had = !!navigator.serviceWorker.controller;        /* (the first install takes over too: no bar for that one) */
+  navigator.serviceWorker.addEventListener("controllerchange", () => { if (had) $("update").hidden = false; had = true; });
+  navigator.serviceWorker.register("sw.js").then((reg) => {
+    swReg = reg;
+    document.addEventListener("visibilitychange", () => { if (!document.hidden) reg.update().catch(() => {}); });
+    setInterval(() => reg.update().catch(() => {}), 30 * 60 * 1000);
+  }).catch(() => {});
+}
+async function updateNow() {
+  if (tabs) tabs.live.release();
+  try { if (swReg) await swReg.update(); } catch (_) {}
+  location.reload();
+}
+
 /* ------------------------------------------------------------ wiring --- */
+$("updatebtn").addEventListener("click", updateNow);
+$("updatelater").addEventListener("click", () => { $("update").hidden = true; });
 for (const t of TABS) $("nav-" + t).addEventListener("click", () => show(t));
 $("play").addEventListener("click", async () => {
   const s = await dev.op(PF.TRANSPORT, [0]);
@@ -199,6 +223,7 @@ $("play").addEventListener("click", async () => {
 });
 $("bpm").addEventListener("pointerdown", () => dev.op(PF.TAP));
 $("status").addEventListener("click", setupSheet);
+$("help").addEventListener("click", () => helpSheet(tabs ? shown() : ["live"]));
 $("connect").addEventListener("click", startUsb);
 $("demo").addEventListener("click", startDemo);
 $("standbydemo").addEventListener("click", () => { dev.disconnect("idle"); startDemo(); });
@@ -215,5 +240,5 @@ $("standbydemo").addEventListener("click", () => { dev.disconnect("idle"); start
     else if (perm === "denied") showGate("MIDI access is blocked for this site. In Chrome: the lock icon in the address bar > Site settings > MIDI devices > Allow, then reload.", true);
     else showGate();
   }
-  if ("serviceWorker" in navigator && location.protocol !== "file:") navigator.serviceWorker.register("sw.js").catch(() => {});
+  registerWorker();
 })();

@@ -4,9 +4,8 @@
 // is the FM-1's: pick one here and the device follows, pick one there and this page follows.
 import { fmtValue } from "./proto.js";
 import { TP_IDS } from "./device.js";
-import { h, knob, sheet, toast, nextCard } from "./widgets.js";
+import { h, knob, sheet, toast } from "./widgets.js";
 import { TC, trackName } from "./parts.js";
-import { NEXT } from "./next.js";
 
 const T = TP_IDS;
 const PAGES = [
@@ -39,12 +38,11 @@ export function soundTab(dev) {
   const save = h("button", { class: "chip", onclick: () => saveSheet() }, "keep");
   const pageBar = h("div", { class: "seg", role: "tablist" });
   const grid = h("div", { class: "knobs" });
-  const nextBox = h("div", {}, h("h2", { class: "nexth" }, "Next steps"), NEXT.sound.map(nextCard));
   const el = h("section", { class: "tab sound", id: "tab-sound", hidden: true },
     h("div", { class: "row ttabs" }, tabs),
     h("div", { class: "pbar" }, prev, h("div", { class: "pmid" }, eng, name), next),
     h("div", { class: "row acts" }, revert, save),
-    pageBar, grid, nextBox);
+    pageBar, grid);
 
   let knobs = [];
   function build() {

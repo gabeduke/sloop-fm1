@@ -2,9 +2,8 @@
 // ARRANGE: from a loop to a song. Capture the loop into the next empty section, launch sections, build a chain,
 // record the song as you play it.
 import { PF } from "./proto.js";
-import { h, sheet, toast, nextCard } from "./widgets.js";
+import { h, sheet, toast } from "./widgets.js";
 import { TC, SEC, sectionTiles, storeSection, launchSection } from "./parts.js";
-import { NEXT } from "./next.js";
 
 export function arrangeTab(dev) {
   let picking = false;                               /* all four used: the next tap picks the one to replace */
@@ -70,13 +69,10 @@ export function arrangeTab(dev) {
   const el = h("section", { class: "tab arrange", id: "tab-arrange", hidden: true },
     capture,
     secs.el,
-    h("p", { class: "hint" }, "Tap: play on the next bar (stopped: load). Hold: replace, add to the chain."),
     h("div", { class: "card" }, h("h2", {}, "Chain"), chips, h("div", { class: "row adds" }, adds),
       h("div", { class: "row two" }, playChain, clearChain), chainInfo),
     h("div", { class: "card" }, h("h2", {}, "Song"),
-      h("div", { class: "row two" }, songRec, songMode), songInfo),
-    h("h2", { class: "nexth" }, "Next steps"),
-    NEXT.arrange.map(nextCard));
+      h("div", { class: "row two" }, songRec, songMode), songInfo));
 
   function paint() {
     const st = dev.live, s = nextEmpty();

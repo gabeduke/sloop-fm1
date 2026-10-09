@@ -57,7 +57,7 @@
 
   /* ---- the app frame: top bar, the tab, the tab bar ---- */
   #app { flex: 1; display: flex; flex-direction: column; min-height: 0; }
-  .top { display: grid; grid-template-columns: 56px auto 1fr auto; gap: var(--gap); padding: 8px var(--side) 6px; align-items: stretch; }
+  .top { display: grid; grid-template-columns: 56px auto 1fr auto auto; gap: var(--gap); padding: 8px var(--side) 6px; align-items: stretch; }
   #play { height: 48px; display: grid; place-items: center; }
   #play::before { content: ""; width: 18px; height: 20px; background: currentColor; clip-path: polygon(0 0, 100% 50%, 0 100%); }
   #play.on { background: var(--fg); color: #000; }
@@ -69,12 +69,26 @@
   .beats i.on { background: var(--fg); }
   .beats i:first-child.on { background: var(--red); }
   #where { color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .helpbtn { width: 44px; background: var(--s1); color: var(--fg2); text-align: center; font-size: 32px; line-height: 32px; }
+  .how { display: flex; flex-direction: column; gap: 6px; }
+  .how h3 { color: var(--fg); }
+  .how dl { margin: 0; display: grid; grid-template-columns: minmax(0, 9em) minmax(0, 1fr); gap: 6px 12px; }
+  .how dt { color: var(--fg2); }
+  .how dd { margin: 0; color: var(--dim); }
+  .guide { display: flex; align-items: center; justify-content: center; text-decoration: none; background: var(--t1); color: #000; margin: 6px 0; }
+  .nextd { border: 1px dashed var(--s3); padding: 8px 10px; }
+  .nextd summary { cursor: pointer; color: var(--fg); display: flex; justify-content: space-between; gap: 8px; min-height: 28px; align-items: center; }
+  .nextd summary small { color: var(--dim); font-size: 16px; }
+  .nextd p { margin-top: 6px; }
   .status { padding: 0 10px; background: var(--s1); color: var(--dim); display: flex; align-items: center; gap: 6px; }
   .status::before { content: ""; width: 8px; height: 8px; background: var(--s3); }
   .status.ok::before { background: var(--t2); }
   .status.bad { color: var(--red); }
   .status.bad::before { background: var(--red); }
   #banner { background: var(--s2); color: var(--fg); padding: 8px var(--side); }
+  .update { display: flex; align-items: center; gap: var(--gap); background: var(--t1); color: #000; padding: 6px var(--side); }
+  .update span { flex: 1; }
+  .update .chip { background: #000; color: var(--fg); min-height: 40px; }
   #app.lost #tabs { opacity: .35; pointer-events: none; }
   #app.standing #play, #app.standing #bpm, #app.standing .pos, #app.standing .tabbar { visibility: hidden; }
   #tabs { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
@@ -242,11 +256,12 @@
 
   /* landscape phones and tablets: the tab bar joins the top bar, the live tab goes side by side */
   @media (orientation: landscape) and (min-width: 640px) {
-    #app { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: auto auto minmax(0, 1fr); }
+    #app { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: auto auto auto minmax(0, 1fr); }
     #app > .top { grid-column: 1; grid-row: 1; }
     #app > .tabbar { grid-column: 2; grid-row: 1; padding: 8px var(--side) 6px 0; grid-template-columns: repeat(4, 88px); }
     #app > #banner { grid-column: 1 / -1; grid-row: 2; }
-    #app > #tabs, #app > .standby { grid-column: 1 / -1; grid-row: 3; }
+    #app > #update { grid-column: 1 / -1; grid-row: 3; }
+    #app > #tabs, #app > .standby { grid-column: 1 / -1; grid-row: 4; }
     .tabbar button[aria-selected=true] { box-shadow: inset 0 -3px 0 var(--fg); }
     .tab.live { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); grid-template-rows: auto auto minmax(0, 1fr); column-gap: 14px; }
     .tab.live > .sections { grid-column: 1; grid-row: 1; }
@@ -337,9 +352,14 @@
     <button id="play" aria-label="Play"></button>
     <button id="bpm" aria-label="Tap tempo" title="Tap tempo"></button>
     <div class="pos"><div class="beats" aria-hidden="true"><i></i><i></i><i></i><i></i></div><div id="where" aria-live="off"></div></div>
+    <button id="help" class="helpbtn" aria-label="Help: how each tab is played, the guide, what could come next">?</button>
     <button id="status" class="status" aria-label="Connection and settings">waiting</button>
   </header>
   <div id="banner" role="status" hidden></div>
+  <div id="update" class="update" role="status" hidden>
+    <span>A new version of SLOOP live is ready.</span>
+    <button id="updatebtn" class="chip">reload</button><button id="updatelater" class="chip">later</button>
+  </div>
   <main id="tabs" hidden></main>
   <section class="standby" id="standby" hidden>
     <div class="plug" aria-hidden="true"><i></i><i></i><i></i></div>

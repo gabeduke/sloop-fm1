@@ -1,9 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // MIX: the four levels with mute and solo, and the master: tempo, swing, dust, duck, roll rate, the DJ filter.
 import { PF, fmtValue } from "./proto.js";
-import { h, fader, nextCard } from "./widgets.js";
+import { h, fader } from "./widgets.js";
 import { TC, trackName } from "./parts.js";
-import { NEXT } from "./next.js";
 
 export function mixTab(dev) {
   const faders = [];
@@ -22,8 +21,7 @@ export function mixTab(dev) {
   const master = h("div", { class: "row master" });
   const el = h("section", { class: "tab mix", id: "tab-mix", hidden: true },
     h("div", { class: "row mixer" }, strips.map((s) => s.el)),
-    h("h2", {}, "Master"), master,
-    h("h2", { class: "nexth" }, "Next steps"), NEXT.mix.map(nextCard));
+    h("h2", {}, "Master"), master);
 
   function build() {
     master.replaceChildren();
